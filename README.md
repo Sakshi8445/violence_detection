@@ -1,6 +1,6 @@
 # Violence Detector
 
-Checks a short video and tells you if it contains a fight.
+Checks a video and tells you if it contains a fight.
 
 ## Setup
 
