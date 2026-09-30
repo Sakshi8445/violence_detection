@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Violence Detection - Test Upload</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+  .box { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  button { padding: 8px 16px; cursor: pointer; }
+  .high { background: #ffd6d6; } .medium { background: #fff2cc; } .low { background: #d9f2d9; }
+  pre { white-space: pre-wrap; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { border: 1px solid #ccc; padding: 6px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <h2>Violence Detection - Upload Video</h2>
+
+  <div class="box">
+    <input type="file" id="video" accept="video/*"><br><br>
+    Camera ID: <input type="number" id="cam" value="1" style="width:60px"><br><br>
+    <button onclick="upload()">Analyze</button>
+    <p id="status"></p>
+    <div id="result"></div>
+  </div>
+
+  <h3>Past Events</h3>
+  <table id="events"><tr><th>Time</th><th>Prediction</th><th>Risk</th><th>Video</th></tr></table>
+
+<script>
+const API = "";
+
+async function upload() {
+  const file = document.getElementById("video").files[0];
+  if (!file) { alert("Pehle video chuno"); return; }
+
+  const fd = new FormData();
+  fd.append("video", file);
+  fd.append("camera_id", document.getElementById("cam").value);
+
+  document.getElementById("status").innerText = "Analyzing... thoda wait karo";
+  document.getElementById("result").innerHTML = "";
+
+  try {
+    const res = await fetch(API + "/api/violence/upload", { method: "POST", body: fd });
+    const data = await res.json();
+    document.getElementById("status").innerText = res.ok ? "Done!" : "Error";
+    document.getElementById("result").innerHTML =
+      `<div class="box ${data.risk_level || ""}"><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+    loadEvents();
+  } catch (e) {
+    document.getElementById("status").innerText = "Backend se connect nahi hua: " + e;
+  }
+}
+
+async function loadEvents() {
+  const res = await fetch(API + "/api/events");
+  const events = await res.json();
+  const t = document.getElementById("events");
+  t.innerHTML = "<tr><th>Time</th><th>Prediction</th><th>Risk</th><th>Video</th></tr>";
+  events.forEach(e => {
+    t.innerHTML += `<tr class="${e.risk_level}"><td>${e.timestamp}</td><td>${e.prediction}</td><td>${e.risk_level}</td><td>${e.video}</td></tr>`;
+  });
+}
+loadEvents();
+</script>
+</body>
+</html>

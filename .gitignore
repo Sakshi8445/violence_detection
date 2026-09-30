@@ -1,0 +1,6 @@
+venv/
+uploads/
+events.json
+results.csv
+test_videos/
+__pycache__/
